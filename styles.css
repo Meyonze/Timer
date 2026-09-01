@@ -3,7 +3,7 @@
 html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; background: #fff; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
 button, input, select { font: inherit; }
 button { cursor: pointer; color: inherit; }
-.app-shell { height: 100dvh; display: grid; grid-template-rows: 50px minmax(0, 1fr); padding: max(6px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+.app-shell { height: 100vh; height: 100dvh; display: grid; grid-template-rows: 50px minmax(0, 1fr); padding: 14px; padding: max(6px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
 .top-bar { display: flex; align-items: center; justify-content: space-between; }
 .top-actions { display: flex; align-items: center; gap: 15px; }
 .icon-button, .close-button { width: 46px; height: 46px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; }
@@ -52,13 +52,13 @@ dialog input[type="range"] { accent-color: var(--timer-color); padding: 0; }
 .dialog-actions button { border: 1px solid var(--line); border-radius: 10px; background: white; padding: 10px 16px; font-weight: 700; }
 .dialog-actions .primary-button { background: var(--timer-color); color: white; border-color: var(--timer-color); }
 @media (max-height: 420px) {
-  .app-shell { grid-template-rows: 42px minmax(0, 1fr); padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: max(4px, env(safe-area-inset-bottom)); }
+  .app-shell { grid-template-rows: 42px minmax(0, 1fr); padding-top: 4px; padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: 4px; padding-bottom: max(4px, env(safe-area-inset-bottom)); }
   .icon-button, .close-button { width: 38px; height: 38px; }
   .icon-button svg { width: 20px; height: 20px; }
   .timer-view { width: min(92vw, 88vh); height: min(92vw, 88vh); }
 }
 @media (orientation: portrait) {
-  .app-shell { grid-template-rows: 54px minmax(0, 1fr); padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); }
+  .app-shell { grid-template-rows: 54px minmax(0, 1fr); padding-inline: 12px; padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); }
   .timer-view { width: min(96vw, 76vh); height: min(96vw, 76vh); }
   #hourglass-view { width: min(66vw, 56vh); }
   #bar-view { width: min(88vw, 760px); }
