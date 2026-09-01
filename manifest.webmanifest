@@ -1,0 +1,12 @@
+{
+  "name": "実感タイマー",
+  "short_name": "実感タイマー",
+  "description": "時間の残りを見てわかる子ども向けタイマー",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2878d4",
+  "lang": "ja",
+  "orientation": "landscape",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

@@ -1,0 +1,66 @@
+:root { --timer-color: #2878d4; --ink: #19324e; --line: #d7e0e9; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; min-height: 100%; margin: 0; background: #fff; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+body { overflow: hidden; }
+button, input, select { font: inherit; }
+button { cursor: pointer; color: inherit; }
+.app-shell { height: 100dvh; display: grid; grid-template-rows: 58px minmax(0, 1fr); padding: max(8px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+.top-bar { display: flex; align-items: center; justify-content: space-between; }
+.top-actions { display: flex; align-items: center; gap: 15px; }
+.icon-button, .close-button { width: 46px; height: 46px; border: 0; background: transparent; font-size: 32px; line-height: 1; border-radius: 50%; }
+.icon-button:active, .close-button:active { background: #eef4fa; }
+#remaining-time { font-variant-numeric: tabular-nums; font-size: clamp(19px, 2.2vw, 30px); color: #4c6278; }
+.cancel-button { border: 1px solid #a9b8c5; border-radius: 10px; background: white; padding: 7px 12px; color: #40586d; font-size: 15px; font-weight: 700; }
+.cancel-button:active { background: #eef4f8; }
+#timer-stage { min-height: 0; display: grid; place-items: center; padding: 0 4vw; }
+.timer-view { width: min(82vw, 72vh); height: min(82vw, 72vh); display: grid; place-items: center; }
+.timer-view[hidden] { display: none !important; }
+#bar-view { width: min(80vw, 900px); }
+#hourglass-view { width: min(58vw, 56vh); }
+#dial-svg, #hourglass-svg { width: 100%; height: 100%; overflow: visible; }
+#dial-svg, #hourglass-svg { touch-action: none; user-select: none; }
+.dial-base { fill: #eff4f8; stroke: var(--line); stroke-width: 2; }
+.timer-fill { fill: var(--timer-color); }
+#disk-fill { opacity: .94; pointer-events: none; }
+.dial-center { fill: #fff; pointer-events: none; }
+.dial-tick { stroke: #8da2b5; stroke-width: 1.5; pointer-events: none; }
+.dial-tick.major { stroke-width: 3; }
+.dial-label { fill: #426079; font-weight: 650; font-size: 18px; pointer-events: none; }
+.dial-main-text { fill: var(--ink); font-size: 44px; font-weight: 750; pointer-events: none; }
+.dial-help-text { fill: #668099; font-size: 15px; pointer-events: none; }
+.bar-track { width: 100%; height: min(23vh, 150px); background: #eff4f8; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; justify-content: flex-end; touch-action: none; }
+#bar-fill { height: 100%; width: 0%; transition: width .15s linear; }
+.glass-outline { fill: none; stroke: #6d8498; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+#hourglass-svg .timer-fill { transition: y .15s linear, height .15s linear; }
+.sand-stream { stroke: var(--timer-color); stroke-width: 7; stroke-linecap: round; opacity: 0; }
+.mode-switcher { display: flex; justify-content: center; align-items: center; gap: clamp(22px, 6vw, 82px); }
+.mode-button { width: 78px; padding: 5px 3px; border: 2px solid transparent; border-radius: 14px; background: transparent; display: grid; gap: 1px; justify-items: center; color: #7c91a3; }
+.mode-button span { font-family: Arial, sans-serif; font-size: 33px; line-height: 34px; }
+.mode-button small { font-size: 13px; }
+.mode-button.selected { color: var(--timer-color); background: color-mix(in srgb, var(--timer-color) 10%, white); border-color: color-mix(in srgb, var(--timer-color) 28%, white); }
+dialog { width: min(470px, calc(100vw - 32px)); border: 0; border-radius: 20px; padding: 0; box-shadow: 0 16px 60px #19324e40; color: var(--ink); }
+dialog::backdrop { background: #19324e55; }
+dialog form { padding: 22px; display: grid; gap: 18px; }
+.dialog-heading { display: flex; align-items: center; justify-content: space-between; }
+.dialog-heading h1 { margin: 0; font-size: 25px; }
+dialog label { display: grid; grid-template-columns: 1fr minmax(165px, 48%); align-items: center; gap: 12px; font-weight: 650; }
+dialog input, dialog select { min-width: 0; border: 1px solid var(--line); border-radius: 9px; background: white; min-height: 38px; padding: 5px 8px; }
+dialog input[type="color"] { width: 100%; padding: 2px; }
+dialog input[type="range"] { accent-color: var(--timer-color); padding: 0; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 3px; }
+.dialog-actions button { border: 1px solid var(--line); border-radius: 10px; background: white; padding: 10px 16px; font-weight: 700; }
+.dialog-actions .primary-button { background: var(--timer-color); color: white; border-color: var(--timer-color); }
+@media (max-height: 420px) { .app-shell { grid-template-rows: 44px minmax(0, 1fr); } .icon-button { width: 40px; height: 40px; font-size: 28px; } .timer-view { width: min(66vw, 70vh); height: min(66vw, 70vh); } }
+@media (orientation: portrait) {
+  .app-shell { grid-template-rows: 54px minmax(0, 1fr); padding-inline: max(12px, env(safe-area-inset-left)); }
+  .timer-view { width: min(88vw, 68vh); height: min(88vw, 68vh); }
+  #hourglass-view { width: min(66vw, 56vh); }
+  #bar-view { width: min(88vw, 760px); }
+}
+@media (max-width: 460px) and (orientation: portrait) {
+  .app-shell { grid-template-rows: 48px minmax(0, 1fr); }
+  .timer-view { width: min(90vw, 66vh); height: min(90vw, 66vh); }
+  .top-actions { gap: 8px; }
+  .cancel-button { padding: 6px 9px; }
+  dialog label { grid-template-columns: 1fr; gap: 6px; }
+}
