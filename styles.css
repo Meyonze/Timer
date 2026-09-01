@@ -3,7 +3,7 @@
 html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; background: #fff; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
 button, input, select { font: inherit; }
 button { cursor: pointer; color: inherit; }
-.app-shell { height: 100dvh; display: grid; grid-template-rows: 58px minmax(0, 1fr); padding: max(8px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+.app-shell { height: 100dvh; display: grid; grid-template-rows: 50px minmax(0, 1fr); padding: max(6px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
 .top-bar { display: flex; align-items: center; justify-content: space-between; }
 .top-actions { display: flex; align-items: center; gap: 15px; }
 .icon-button, .close-button { width: 46px; height: 46px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; }
@@ -13,8 +13,8 @@ button { cursor: pointer; color: inherit; }
 #remaining-time { font-variant-numeric: tabular-nums; font-size: clamp(19px, 2.2vw, 30px); color: #4c6278; }
 .cancel-button { border: 1px solid #a9b8c5; border-radius: 10px; background: white; padding: 7px 12px; color: #40586d; font-size: 15px; font-weight: 700; }
 .cancel-button:active { background: #eef4f8; }
-#timer-stage { min-height: 0; display: grid; place-items: center; padding: 0 4vw; }
-.timer-view { width: min(82vw, 72vh); height: min(82vw, 72vh); display: grid; place-items: center; }
+#timer-stage { min-height: 0; display: grid; place-items: center; padding: 0 2vw; }
+.timer-view { width: min(94vw, 80vh); height: min(94vw, 80vh); display: grid; place-items: center; }
 .timer-view[hidden] { display: none !important; }
 #bar-view { width: min(80vw, 900px); }
 #hourglass-view { width: min(58vw, 56vh); }
@@ -54,13 +54,13 @@ dialog input[type="range"] { accent-color: var(--timer-color); padding: 0; }
 @media (max-height: 420px) { .app-shell { grid-template-rows: 44px minmax(0, 1fr); } .icon-button { width: 40px; height: 40px; font-size: 28px; } .timer-view { width: min(66vw, 70vh); height: min(66vw, 70vh); } }
 @media (orientation: portrait) {
   .app-shell { grid-template-rows: 54px minmax(0, 1fr); padding-inline: max(12px, env(safe-area-inset-left)); }
-  .timer-view { width: min(88vw, 68vh); height: min(88vw, 68vh); }
+  .timer-view { width: min(96vw, 76vh); height: min(96vw, 76vh); }
   #hourglass-view { width: min(66vw, 56vh); }
   #bar-view { width: min(88vw, 760px); }
 }
 @media (max-width: 460px) and (orientation: portrait) {
   .app-shell { grid-template-rows: 48px minmax(0, 1fr); }
-  .timer-view { width: min(90vw, 66vh); height: min(90vw, 66vh); }
+  .timer-view { width: min(97vw, 74vh); height: min(97vw, 74vh); }
   .top-actions { gap: 8px; }
   .cancel-button { padding: 6px 9px; }
   dialog label { grid-template-columns: 1fr; gap: 6px; }
