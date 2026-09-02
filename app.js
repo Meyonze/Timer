@@ -212,7 +212,9 @@ class AppController {
       const timer = new Timer(() => this.sound.play(this.settings.sound, this.settings.volume));
       const root = document.querySelector(`.timer-view[data-unit="${index}"]`);
       const view = new DiskView(timer, root, (minutes, commit) => this.selectMinutes(index, minutes, commit));
-      return { timer, view, pendingStart: null };
+      const unit = { timer, view, pendingStart: null, cancelButton: root.querySelector(".unit-cancel") };
+      unit.cancelButton.addEventListener("click", () => this.cancelUnit(index));
+      return unit;
     });
     this.bindUI();
     this.applySettings();
@@ -300,6 +302,13 @@ class AppController {
     this.render();
   }
 
+  cancelUnit(index) {
+    const unit = this.units[index];
+    if (unit.pendingStart) { clearTimeout(unit.pendingStart); unit.pendingStart = null; }
+    unit.timer.cancel();
+    this.render();
+  }
+
   cancelAll() {
     const activeUnits = this.dualMode ? this.units : [this.units[0]];
     activeUnits.forEach(unit => {
@@ -318,21 +327,16 @@ class AppController {
 
   render() {
     const activeUnits = this.dualMode ? this.units : [this.units[0]];
-    let anyActive = false;
-    let leadRemaining = null;
     activeUnits.forEach(unit => {
       unit.timer.update();
       unit.view.render(this.unitDisplayState(unit));
-      if (unit.timer.isRunning || unit.pendingStart) anyActive = true;
-      if (unit.timer.isRunning && (leadRemaining === null || unit.timer.remainingSeconds < leadRemaining)) {
-        leadRemaining = unit.timer.remainingSeconds;
-      }
+      unit.cancelButton.hidden = !(this.dualMode && (unit.timer.isRunning || unit.pendingStart));
     });
-    const displaySeconds = leadRemaining === null ? 0 : leadRemaining;
-    $("#remaining-time").value = formatTime(displaySeconds);
-    $("#remaining-time").textContent = formatTime(displaySeconds);
+    const primary = this.units[0];
+    $("#remaining-time").value = formatTime(primary.timer.remainingSeconds);
+    $("#remaining-time").textContent = formatTime(primary.timer.remainingSeconds);
     $("#remaining-time").hidden = this.dualMode;
-    $("#cancel-button").hidden = !anyActive;
+    $("#cancel-button").hidden = this.dualMode || !(primary.timer.isRunning || primary.pendingStart);
   }
 
   frame() { this.render(); requestAnimationFrame(() => this.frame()); }

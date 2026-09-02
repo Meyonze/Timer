@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
     <title>実感タイマー</title>
   </head>
   <body>
@@ -45,6 +45,7 @@
             <text class="dial-main-text" x="250" y="257" text-anchor="middle">10分</text>
             <text class="dial-help-text" x="250" y="288" text-anchor="middle">円をなぞって時間を決める</text>
           </svg>
+          <button class="unit-cancel" type="button" aria-label="1つ目のタイマーを終了" hidden>終了</button>
         </div>
         <div class="disk-view timer-view" data-unit="1" hidden>
           <svg class="dial-svg" viewBox="0 0 500 500" role="img" aria-label="時間を設定する円盤 2">
@@ -56,6 +57,7 @@
             <text class="dial-main-text" x="250" y="257" text-anchor="middle">10分</text>
             <text class="dial-help-text" x="250" y="288" text-anchor="middle">円をなぞって時間を決める</text>
           </svg>
+          <button class="unit-cancel" type="button" aria-label="2つ目のタイマーを終了" hidden>終了</button>
         </div>
       </section>
     </main>
@@ -76,6 +78,6 @@
       </form>
     </dialog>
 
-    <script defer src="app.js?v=7"></script>
+    <script defer src="app.js?v=8"></script>
   </body>
 </html>
