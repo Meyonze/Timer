@@ -8,18 +8,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v=10" />
+    <link rel="stylesheet" href="styles.css?v=11" />
     <title>実感タイマー</title>
   </head>
   <body>
     <main class="app-shell">
       <header class="top-bar">
-        <button id="settings-button" class="icon-button" type="button" aria-label="設定を開く">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3.09 13H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
+        <div class="header-left">
+          <button id="settings-button" class="icon-button" type="button" aria-label="設定を開く">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3.09 13H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+          <button id="layout-toggle" class="icon-button" type="button" aria-label="2つ並べて表示に切り替え" aria-pressed="false" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="5" width="8" height="14" rx="2"></rect>
+              <rect x="13.5" y="5" width="8" height="14" rx="2"></rect>
+            </svg>
+          </button>
+        </div>
         <div class="top-actions">
           <button id="cancel-button" class="cancel-button" type="button" aria-label="タイマーを終了" hidden>終了</button>
           <output id="remaining-time" aria-label="残り時間">0:00</output>
@@ -27,18 +35,28 @@
       </header>
 
       <section id="timer-stage" aria-label="視覚タイマー">
-        <div id="disk-view" class="timer-view" data-mode="disk">
-          <svg id="dial-svg" viewBox="0 0 500 500" role="img" aria-label="時間を設定する円盤">
+        <div class="disk-view timer-view" data-unit="0">
+          <svg class="dial-svg" viewBox="0 0 500 500" role="img" aria-label="時間を設定する円盤 1">
             <circle class="dial-base" cx="250" cy="250" r="201" />
-            <path id="disk-fill" class="timer-fill" d="" />
-            <g id="dial-ticks"></g>
-            <g id="dial-labels"></g>
+            <path class="disk-fill timer-fill" d="" />
+            <g class="dial-ticks"></g>
+            <g class="dial-labels"></g>
             <circle class="dial-center" cx="250" cy="250" r="126" />
-            <text id="dial-main-text" class="dial-main-text" x="250" y="257" text-anchor="middle">10分</text>
-            <text id="dial-help-text" class="dial-help-text" x="250" y="288" text-anchor="middle">円をなぞって時間を決める</text>
+            <text class="dial-main-text" x="250" y="257" text-anchor="middle">10分</text>
+            <text class="dial-help-text" x="250" y="288" text-anchor="middle">円をなぞって時間を決める</text>
           </svg>
         </div>
-
+        <div class="disk-view timer-view" data-unit="1" hidden>
+          <svg class="dial-svg" viewBox="0 0 500 500" role="img" aria-label="時間を設定する円盤 2">
+            <circle class="dial-base" cx="250" cy="250" r="201" />
+            <path class="disk-fill timer-fill" d="" />
+            <g class="dial-ticks"></g>
+            <g class="dial-labels"></g>
+            <circle class="dial-center" cx="250" cy="250" r="126" />
+            <text class="dial-main-text" x="250" y="257" text-anchor="middle">10分</text>
+            <text class="dial-help-text" x="250" y="288" text-anchor="middle">円をなぞって時間を決める</text>
+          </svg>
+        </div>
       </section>
     </main>
 
@@ -58,6 +76,6 @@
       </form>
     </dialog>
 
-    <script defer src="app.js?v=6"></script>
+    <script defer src="app.js?v=7"></script>
   </body>
 </html>

@@ -105,24 +105,25 @@ class TimerView {
 }
 
 class DiskView extends TimerView {
-  constructor(timer, svg, onChoose) {
+  constructor(timer, root, onChoose) {
     super(timer);
-    this.svg = svg;
-    this.fill = $("#disk-fill");
-    this.mainText = $("#dial-main-text");
-    this.helpText = $("#dial-help-text");
+    this.root = root;
+    this.svg = root.querySelector(".dial-svg");
+    this.fill = root.querySelector(".disk-fill");
+    this.mainText = root.querySelector(".dial-main-text");
+    this.helpText = root.querySelector(".dial-help-text");
     this.onChoose = onChoose;
     this.dragging = false;
     this.createMarks();
-    svg.addEventListener("pointerdown", event => this.pointerDown(event));
-    svg.addEventListener("pointermove", event => this.pointerMove(event));
-    svg.addEventListener("pointerup", event => this.pointerUp(event));
-    svg.addEventListener("pointercancel", () => this.pointerCancel());
+    this.svg.addEventListener("pointerdown", event => this.pointerDown(event));
+    this.svg.addEventListener("pointermove", event => this.pointerMove(event));
+    this.svg.addEventListener("pointerup", event => this.pointerUp(event));
+    this.svg.addEventListener("pointercancel", () => this.pointerCancel());
   }
 
   createMarks() {
-    const ticks = $("#dial-ticks");
-    const labels = $("#dial-labels");
+    const ticks = this.root.querySelector(".dial-ticks");
+    const labels = this.root.querySelector(".dial-labels");
     for (let minute = 1; minute <= 60; minute += 1) {
       const angle = minute / 60 * Math.PI * 2 - Math.PI / 2;
       const major = minute % 5 === 0;
@@ -182,93 +183,6 @@ class DiskView extends TimerView {
   }
 }
 
-class BarView extends TimerView {
-  constructor(timer, onChoose) {
-    super(timer);
-    this.track = $("#bar-track");
-    this.onChoose = onChoose;
-    this.dragging = false;
-    this.track.addEventListener("pointerdown", event => this.pointerDown(event));
-    this.track.addEventListener("pointermove", event => this.pointerMove(event));
-    this.track.addEventListener("pointerup", event => this.pointerUp(event));
-    this.track.addEventListener("pointercancel", () => { this.dragging = false; });
-  }
-
-  minuteAt(event) {
-    const rect = this.track.getBoundingClientRect();
-    const fraction = (event.clientX - rect.left) / rect.width;
-    return Math.max(1, Math.min(60, Math.round(fraction * 60)));
-  }
-
-  pointerDown(event) {
-    if (this.timer.isRunning) return;
-    this.dragging = true;
-    this.track.setPointerCapture(event.pointerId);
-    this.onChoose(this.minuteAt(event), false);
-  }
-
-  pointerMove(event) {
-    if (this.dragging) this.onChoose(this.minuteAt(event), false);
-  }
-
-  pointerUp(event) {
-    if (!this.dragging) return;
-    this.dragging = false;
-    this.onChoose(this.minuteAt(event), true);
-  }
-
-  render({ fraction }) { $("#bar-fill").style.width = `${Math.max(0, fraction) * 100}%`; }
-}
-
-class HourglassView extends TimerView {
-  constructor(timer, onChoose) {
-    super(timer);
-    this.svg = $("#hourglass-svg");
-    this.onChoose = onChoose;
-    this.dragging = false;
-    this.svg.addEventListener("pointerdown", event => this.pointerDown(event));
-    this.svg.addEventListener("pointermove", event => this.pointerMove(event));
-    this.svg.addEventListener("pointerup", event => this.pointerUp(event));
-    this.svg.addEventListener("pointercancel", () => { this.dragging = false; });
-  }
-
-  minuteAt(event) {
-    const rect = this.svg.getBoundingClientRect();
-    const fraction = 1 - (event.clientY - rect.top) / rect.height;
-    return Math.max(1, Math.min(60, Math.round(fraction * 60)));
-  }
-
-  pointerDown(event) {
-    if (this.timer.isRunning) return;
-    this.dragging = true;
-    this.svg.setPointerCapture(event.pointerId);
-    this.onChoose(this.minuteAt(event), false);
-  }
-
-  pointerMove(event) {
-    if (this.dragging) this.onChoose(this.minuteAt(event), false);
-  }
-
-  pointerUp(event) {
-    if (!this.dragging) return;
-    this.dragging = false;
-    this.onChoose(this.minuteAt(event), true);
-  }
-
-  render({ fraction }) {
-    const safeFraction = Math.max(0, Math.min(1, fraction));
-    const topY = 52 + (1 - safeFraction) * 151;
-    const bottomHeight = (1 - safeFraction) * 151;
-    const top = $("#top-sand");
-    const bottom = $("#bottom-sand");
-    top.setAttribute("y", topY);
-    top.setAttribute("height", 203 - topY);
-    bottom.setAttribute("y", 367 - bottomHeight);
-    bottom.setAttribute("height", bottomHeight);
-    $("#sand-stream").style.opacity = safeFraction > 0 && safeFraction < 1 ? "1" : "0";
-  }
-}
-
 function wedgePath(fraction) {
   const f = Math.max(0, Math.min(1, fraction));
   if (f === 0) return "";
@@ -292,23 +206,26 @@ function loadSettings() {
 class AppController {
   constructor() {
     this.settings = loadSettings();
-    this.mode = "disk";
-    this.pendingStart = null;
+    this.dualMode = false;
     this.sound = new SoundPlayer();
-    this.timer = new Timer(() => this.sound.play(this.settings.sound, this.settings.volume));
-    this.diskView = new DiskView(this.timer, $("#dial-svg"), (minutes, commit) => this.selectMinutes(minutes, commit));
-    this.views = { disk: this.diskView };
+    this.units = [0, 1].map(index => {
+      const timer = new Timer(() => this.sound.play(this.settings.sound, this.settings.volume));
+      const root = document.querySelector(`.timer-view[data-unit="${index}"]`);
+      const view = new DiskView(timer, root, (minutes, commit) => this.selectMinutes(index, minutes, commit));
+      return { timer, view, pendingStart: null };
+    });
     this.bindUI();
     this.applySettings();
-    this.setMode(this.mode);
     this.wakeLock = new WakeLockManager();
     this.wakeLock.acquire();
+    window.addEventListener("resize", () => this.handleOrientationChange());
     requestAnimationFrame(() => this.frame());
   }
 
   bindUI() {
     $("#settings-button").addEventListener("click", () => this.openSettings());
-    $("#cancel-button").addEventListener("click", () => this.cancelTimer());
+    $("#layout-toggle").addEventListener("click", () => this.toggleDualMode());
+    $("#cancel-button").addEventListener("click", () => this.cancelAll());
     $("#settings-form").addEventListener("submit", event => {
       event.preventDefault();
       if (event.submitter?.value === "save") this.saveSettings();
@@ -319,6 +236,27 @@ class AppController {
       this.sound.play($("#sound-input").value, Number($("#volume-input").value));
     });
     $("#color-input").addEventListener("input", event => document.documentElement.style.setProperty("--timer-color", event.target.value));
+  }
+
+  toggleDualMode(force) {
+    const next = typeof force === "boolean" ? force : !this.dualMode;
+    if (next === this.dualMode) return;
+    this.dualMode = next;
+    const secondUnit = this.units[1];
+    if (!this.dualMode) {
+      // 非表示に戻す2つ目のタイマーは念のためキャンセルしておく
+      if (secondUnit.pendingStart) { clearTimeout(secondUnit.pendingStart); secondUnit.pendingStart = null; }
+      secondUnit.timer.cancel();
+    }
+    secondUnit.view.root.hidden = !this.dualMode;
+    $("#timer-stage").classList.toggle("dual-mode", this.dualMode);
+    $("#layout-toggle").setAttribute("aria-pressed", String(this.dualMode));
+    this.render();
+  }
+
+  handleOrientationChange() {
+    // 縦向きに戻ったら横並び表示は自動的に解除する
+    if (this.dualMode && window.matchMedia("(orientation: portrait)").matches) this.toggleDualMode(false);
   }
 
   applySettings() {
@@ -346,49 +284,55 @@ class AppController {
     this.applySettings();
   }
 
-  setMode() {
-    this.mode = "disk";
-    $("#disk-view").hidden = false;
-  }
-
-  selectMinutes(minutes, commit) {
-    if (this.pendingStart) { clearTimeout(this.pendingStart); this.pendingStart = null; }
-    this.timer.setDuration(minutes);
+  selectMinutes(index, minutes, commit) {
+    const unit = this.units[index];
+    if (unit.pendingStart) { clearTimeout(unit.pendingStart); unit.pendingStart = null; }
+    unit.timer.setDuration(minutes);
     this.render();
     if (!commit) return;
     // タッチ操作中に音声コンテキストを解放しておくと、終了時もiPadで鳴らせる。
     this.sound.ensureContext();
-    this.pendingStart = window.setTimeout(() => {
-      this.pendingStart = null;
-      this.timer.start();
+    unit.pendingStart = window.setTimeout(() => {
+      unit.pendingStart = null;
+      unit.timer.start();
       this.render();
     }, 1000);
     this.render();
   }
 
-  cancelTimer() {
-    if (this.pendingStart) {
-      clearTimeout(this.pendingStart);
-      this.pendingStart = null;
-    }
-    this.timer.cancel();
+  cancelAll() {
+    const activeUnits = this.dualMode ? this.units : [this.units[0]];
+    activeUnits.forEach(unit => {
+      if (unit.pendingStart) { clearTimeout(unit.pendingStart); unit.pendingStart = null; }
+      unit.timer.cancel();
+    });
     this.render();
   }
 
-  displayState() {
-    const setting = !this.timer.isRunning && this.timer.state !== "finished";
-    const fraction = setting ? this.timer.durationSeconds / 3600 : this.timer.remainingSeconds / 3600;
-    const label = setting ? `${this.timer.durationSeconds / 60}分` : formatTime(this.timer.remainingSeconds);
+  unitDisplayState(unit) {
+    const setting = !unit.timer.isRunning && unit.timer.state !== "finished";
+    const fraction = setting ? unit.timer.durationSeconds / 3600 : unit.timer.remainingSeconds / 3600;
+    const label = setting ? `${unit.timer.durationSeconds / 60}分` : formatTime(unit.timer.remainingSeconds);
     return { fraction, label, help: setting ? "円をなぞって時間を決める" : "" };
   }
 
   render() {
-    this.timer.update();
-    const state = this.displayState();
-    Object.values(this.views).forEach(view => view.render(state));
-    $("#remaining-time").value = formatTime(this.timer.remainingSeconds);
-    $("#remaining-time").textContent = formatTime(this.timer.remainingSeconds);
-    $("#cancel-button").hidden = !this.timer.isRunning && !this.pendingStart;
+    const activeUnits = this.dualMode ? this.units : [this.units[0]];
+    let anyActive = false;
+    let leadRemaining = null;
+    activeUnits.forEach(unit => {
+      unit.timer.update();
+      unit.view.render(this.unitDisplayState(unit));
+      if (unit.timer.isRunning || unit.pendingStart) anyActive = true;
+      if (unit.timer.isRunning && (leadRemaining === null || unit.timer.remainingSeconds < leadRemaining)) {
+        leadRemaining = unit.timer.remainingSeconds;
+      }
+    });
+    const displaySeconds = leadRemaining === null ? 0 : leadRemaining;
+    $("#remaining-time").value = formatTime(displaySeconds);
+    $("#remaining-time").textContent = formatTime(displaySeconds);
+    $("#remaining-time").hidden = this.dualMode;
+    $("#cancel-button").hidden = !anyActive;
   }
 
   frame() { this.render(); requestAnimationFrame(() => this.frame()); }
