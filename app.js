@@ -51,7 +51,7 @@ class Timer {
 }
 
 class SoundPlayer {
-  constructor() { this.context = null; }
+  constructor() { this.context = null; this.activeOscillators = []; }
 
   ensureContext() {
     if (!(window.AudioContext || window.webkitAudioContext)) return null;
@@ -60,23 +60,45 @@ class SoundPlayer {
     return this.context;
   }
 
-  play(type, volume) {
+  play(type, volume, durationSeconds = 10) {
     if (!volume || !(window.AudioContext || window.webkitAudioContext)) return;
     const context = this.ensureContext();
-    const notes = type === "bell" ? [[784, 0, 1.35]] : type === "chime" ? [[659, 0, .7], [880, .18, .95]] : [[523.25, 0, .65], [659.25, .14, .75]];
+    // 種類ごとに「1回分の鳴り方」と、そのくり返し間隔(秒)を定義し、指定した長さになるまでくり返す。
+    const patterns = {
+      bell: { notes: [[784, 0, 1.05]], cycle: 1.5, waveform: "sine" },
+      chime: { notes: [[659, 0, .55], [880, .16, .75]], cycle: 1.3, waveform: "triangle" },
+      gentle: { notes: [[523.25, 0, .5], [659.25, .12, .6]], cycle: 1.0, waveform: "triangle" }
+    };
+    const pattern = patterns[type] || patterns.gentle;
     const now = context.currentTime;
-    notes.forEach(([frequency, offset, length]) => {
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = type === "bell" ? "sine" : "triangle";
-      oscillator.frequency.setValueAtTime(frequency, now + offset);
-      gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(Math.max(.0001, volume * .16), now + offset + .025);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + length);
-      oscillator.connect(gain).connect(context.destination);
-      oscillator.start(now + offset);
-      oscillator.stop(now + offset + length + .03);
+    const repeatCount = Math.ceil(durationSeconds / pattern.cycle);
+    for (let repeat = 0; repeat < repeatCount; repeat += 1) {
+      const base = repeat * pattern.cycle;
+      pattern.notes.forEach(([frequency, offset, length]) => {
+        const startAt = base + offset;
+        if (startAt >= durationSeconds) return;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = pattern.waveform;
+        oscillator.frequency.setValueAtTime(frequency, now + startAt);
+        gain.gain.setValueAtTime(0.0001, now + startAt);
+        gain.gain.exponentialRampToValueAtTime(Math.max(.0001, volume * .4), now + startAt + .025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startAt + length);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start(now + startAt);
+        oscillator.stop(now + startAt + length + .03);
+        this.activeOscillators.push(oscillator);
+      });
+    }
+  }
+
+  stop() {
+    if (!this.context) return;
+    const now = this.context.currentTime;
+    this.activeOscillators.forEach(oscillator => {
+      try { oscillator.stop(now); } catch (_) { /* すでに停止済みの場合は無視 */ }
     });
+    this.activeOscillators = [];
   }
 }
 
@@ -235,7 +257,7 @@ class AppController {
     });
     $("#settings-dialog").addEventListener("close", () => this.restoreSettingsForm());
     $("#sound-test-button").addEventListener("click", () => {
-      this.sound.play($("#sound-input").value, Number($("#volume-input").value));
+      this.sound.play($("#sound-input").value, Number($("#volume-input").value), 2.5);
     });
     $("#color-input").addEventListener("input", event => document.documentElement.style.setProperty("--timer-color", event.target.value));
   }
@@ -306,6 +328,7 @@ class AppController {
     const unit = this.units[index];
     if (unit.pendingStart) { clearTimeout(unit.pendingStart); unit.pendingStart = null; }
     unit.timer.cancel();
+    this.sound.stop();
     this.render();
   }
 
@@ -315,6 +338,7 @@ class AppController {
       if (unit.pendingStart) { clearTimeout(unit.pendingStart); unit.pendingStart = null; }
       unit.timer.cancel();
     });
+    this.sound.stop();
     this.render();
   }
 
